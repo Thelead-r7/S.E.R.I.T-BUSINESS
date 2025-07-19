@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Avis Clients</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .avis-container {
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+    .commentaire {
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .commentaire img {
+      width: 40px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+    .etoiles span {
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .etoile-jaune { color: gold; }
+    .etoile-bleue { color: dodgerblue; }
+    .connexion {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      padding: 8px;
+      resize: none;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .envoyer {
+      margin-top: 10px;
+      padding: 8px 20px;
+      background: dodgerblue;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="avis-container">
+    <h2>Les Avis de Nos Clients</h2>
+
+    <div class="connexion">
+      <button id="loginBtn">Se connecter avec Gmail</button>
+      <button id="logoutBtn" style="display: none;">Déconnexion</button>
+    </div>
+
+    <div id="commentaireForm" style="display: none;">
+      <textarea id="commentaireText" rows="4" placeholder="Écrivez votre avis ici..."></textarea>
+      <div class="etoiles" id="etoilesContainer">
+        <!-- Étoiles générées dynamiquement -->
+      </div>
+      <button class="envoyer" onclick="envoyerCommentaire()">Envoyer</button>
+    </div>
+
+    <div id="listeCommentaires">
+      <!-- Commentaires affichés ici -->
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="avis.js"></script>
+</body>
+</html>
