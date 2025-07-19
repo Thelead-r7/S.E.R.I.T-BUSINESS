@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Galerie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Police Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <h1 class="logo">Galerie de l'entreprise</h1>
+      <div class="navbar">
+        <a href="index.html">Accueil</a>
+        <a href="publication.html">Publications</a>
+        <a href="galerie.html" class="active">Galerie</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="services">
+    <h2 class="section-title">Nos Réalisations</h2>
+    <div class="service-grid" id="gallery">
+      <!-- Les images seront insérées ici via Firebase -->
+    </div>
+  </section>
+
+  <div class="footer">
+    &copy; 2025 Mon Entreprise. Tous droits réservés.
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "TA_CLE_API",
+      authDomain: "TON_PROJET.firebaseapp.com",
+      projectId: "TON_PROJET",
+      storageBucket: "TON_PROJET.appspot.com",
+      messagingSenderId: "TON_SENDER_ID",
+      appId: "TON_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const galleryContainer = document.getElementById('gallery');
+
+    db.collection("galerie").orderBy("timestamp", "desc").get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const card = document.createElement("div");
+          card.className = "service-card";
+          card.innerHTML = `
+            <img src="${data.imageUrl}" alt="Photo de la galerie">
+            <h3>${data.titre || 'Photo'}</h3>
+            <p>${data.description || ''}</p>
+          `;
+          galleryContainer.appendChild(card);
+        });
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement de la galerie :", error);
+      });
+  </script>
+</body>
+</html>
