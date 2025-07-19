@@ -1,0 +1,146 @@
+/* Réinitialisation */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Corps */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Bouton ☰ */
+.menu-icon {
+  font-size: 30px;
+  padding: 15px 20px;
+  cursor: pointer;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1001;
+  color: #ffffff;
+  background-color: #004466;
+  border-radius: 5px;
+}
+
+/* Menu latéral */
+.side-menu {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #222;
+  overflow-x: hidden;
+  transition: 0.4s;
+  padding-top: 60px;
+  z-index: 1000;
+}
+
+.side-menu a {
+  padding: 15px 30px;
+  text-decoration: none;
+  font-size: 18px;
+  color: #f1f1f1;
+  display: block;
+  transition: 0.3s;
+}
+
+.side-menu a:hover {
+  background-color: #575757;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 30px;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* En-tête */
+header {
+  text-align: center;
+  padding: 60px 20px 20px;
+  background: linear-gradient(to right, #004466, #006699);
+  color: #f9f9f9;
+}
+
+.logo {
+  width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+  border-radius: 50%;
+}
+
+/* Bannière */
+.banner {
+  padding: 40px 20px;
+  background-color: #e0f7fa;
+  text-align: center;
+}
+
+.banner h2 {
+  font-size: 24px;
+  color: #00796b;
+}
+
+/* Services */
+.services {
+  padding: 40px 20px;
+  background: #ffffff;
+}
+
+.services h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #004d40;
+}
+
+.service {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.service img {
+  width: 100%;
+  max-width: 350px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.service h3 {
+  color: #00796b;
+  margin-bottom: 10px;
+}
+
+/* Pied de page */
+footer {
+  background-color: #263238;
+  color: #ccc;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
+.retour-accueil {
+  display: inline-block;
+  margin: 15px 20px;
+  font-size: 16px;
+  color: #004466;
+  text-decoration: none;
+  font-weight: bold;
+  background: #e0f7fa;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.retour-accueil:hover {
+  text-decoration: underline;
+  background: #b2ebf2;
+}
