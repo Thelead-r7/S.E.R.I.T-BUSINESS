@@ -1,11 +1,11 @@
-// Initialisation Firebase (modifiez avec vos propres infos)
+// Configuration Firebase (celle que tu as donnée)
 const firebaseConfig = {
-  apiKey: "VOTRE_API_KEY",
-  authDomain: "VOTRE_PROJET.firebaseapp.com",
-  projectId: "VOTRE_PROJET",
-  storageBucket: "VOTRE_PROJET.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123def456"
+  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+  authDomain: "serit-societe.firebaseapp.com",
+  projectId: "serit-societe",
+  storageBucket: "serit-societe.appspot.com",  // Correction ici : ".appspot.com" et non ".firebasestorage.app"
+  messagingSenderId: "25581120285",
+  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -13,10 +13,17 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// Vérifie si l'utilisateur est connecté (authentifié)
+// UID de l'admin autorisé
+const adminUID = "39yahW5x6UeOLSpLzghM5CNu3k73";  // <-- remplace par ton UID admin exact
+
+// Vérifie si l'utilisateur est connecté et admin (par UID)
 auth.onAuthStateChanged(user => {
   if (!user) {
     alert("Accès refusé. Connectez-vous !");
+    window.location.href = "connexion-admin.html";
+  } else if (user.uid !== adminUID) {
+    alert("Accès refusé : vous n'êtes pas admin.");
+    auth.signOut();
     window.location.href = "connexion-admin.html";
   }
 });
@@ -35,21 +42,26 @@ document.getElementById("form-pub").addEventListener("submit", async (e) => {
   }
 
   let imageURL = "";
-  if (imageFile) {
-    const imageRef = storage.ref(`publications/${Date.now()}_${imageFile.name}`);
-    await imageRef.put(imageFile);
-    imageURL = await imageRef.getDownloadURL();
+
+  try {
+    if (imageFile) {
+      const imageRef = storage.ref(`publications/${Date.now()}_${imageFile.name}`);
+      await imageRef.put(imageFile);
+      imageURL = await imageRef.getDownloadURL();
+    }
+
+    await db.collection("publications").add({
+      titre,
+      contenu,
+      imageURL,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert("✅ Publication envoyée !");
+    document.getElementById("form-pub").reset();
+  } catch (error) {
+    alert("Erreur lors de la publication : " + error.message);
   }
-
-  await db.collection("publications").add({
-    titre,
-    contenu,
-    imageURL,
-    date: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  alert("✅ Publication envoyée !");
-  document.getElementById("form-pub").reset();
 });
 
 // Déconnexion
