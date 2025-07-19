@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Espace Client</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <a href="index.html" class="retour-accueil">← Retour à l’accueil</a>
+  <h1>Bienvenue sur l'espace client</h1>
+
+  <!-- Connexion utilisateur -->
+  <div id="user-section">
+    <button id="loginBtn">Connexion avec Google</button>
+    <span id="user-info"></span>
+  </div>
+
+  <!-- Commentaires visibles par tous -->
+  <section id="commentaires">
+    <h2>Commentaires des clients</h2>
+    <div id="liste-commentaires"></div>
+  </section>
+
+  <!-- Formulaire de commentaire (visible seulement connecté) -->
+  <section id="formulaire-commentaire" style="display:none;">
+    <h3>Laisser un commentaire</h3>
+    <div id="stars">
+      <span class="star" data-value="1">⭐</span>
+      <span class="star" data-value="2">⭐</span>
+      <span class="star" data-value="3">⭐</span>
+      <span class="star" data-value="4">⭐</span>
+      <span class="star" data-value="5">⭐</span>
+    </div>
+    <div id="blue-star" style="display:none;">
+      <label><input type="checkbox" id="etoile-bleue" /> Je suis extrêmement heureux 😊💙</label>
+    </div>
+    <textarea id="commentaire" placeholder="Votre avis..."></textarea>
+    <button id="envoyerCommentaire">Envoyer</button>
+  </section>
+
+  <script>
+    // Config Firebase
+    const firebaseConfig = {
+      apiKey: "TON_API_KEY",
+      authDomain: "TON_PROJECT.firebaseapp.com",
+      projectId: "TON_PROJECT_ID",
+      storageBucket: "TON_PROJECT.appspot.com",
+      messagingSenderId: "XXXXXXX",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Sélection d'éléments
+    const loginBtn = document.getElementById('loginBtn');
+    const userInfo = document.getElementById('user-info');
+    const formSection = document.getElementById('formulaire-commentaire');
+    const listeCommentaires = document.getElementById('liste-commentaires');
+    const stars = document.querySelectorAll('.star');
+    const blueStar = document.getElementById('blue-star');
+    let note = 0;
+
+    // Authentification
+    loginBtn.onclick = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
+    };
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        userInfo.textContent = `Connecté : ${user.displayName}`;
+        formSection.style.display = 'block';
+        loginBtn.style.display = 'none';
+      }
+    });
+
+    // Gestion des étoiles
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        note = parseInt(star.dataset.value);
+        stars.forEach(s => s.textContent = '⭐');
+        for (let i = 0; i < note; i++) {
+          stars[i].textContent = '🟡';
+        }
+        blueStar.style.display = note === 5 ? 'block' : 'none';
+      });
+    });
+
+    // Envoi commentaire
+    document.getElementById('envoyerCommentaire').onclick = async () => {
+      const commentaire = document.getElementById('commentaire').value.trim();
+      const etoileBleue = document.getElementById('etoile-bleue').checked;
+      const user = auth.currentUser;
+
+      if (!user || note === 0 || commentaire === "") {
+        alert("Connectez-vous et remplissez tous les champs !");
+        return;
+      }
+
+      await db.collection("commentaires").add({
+        nom: user.displayName,
+        commentaire,
+        note,
+        etoileBleue,
+        date: new Date().toISOString()
+      });
+
+      document.getElementById('commentaire').value = "";
+      document.getElementById('etoile-bleue').checked = false;
+      alert("Commentaire envoyé !");
+      afficherCommentaires();
+    };
+
+    // Affichage des commentaires
+    async function afficherCommentaires() {
+      const snap = await db.collection("commentaires").orderBy("date", "desc").get();
+      listeCommentaires.innerHTML = "";
+      snap.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement('div');
+        div.className = 'commentaire';
+        div.innerHTML = `
+          <strong>${data.nom}</strong> (${data.note} étoiles${data.etoileBleue ? ' 💙' : ''})<br>
+          ${data.commentaire}<hr/>
+        `;
+        listeCommentaires.appendChild(div);
+      });
+    }
+
+    afficherCommentaires();
+  </script>
+
+  <style>
+    #stars .star {
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      margin: 10px 0;
+    }
+
+    .commentaire {
+      background: #f1f1f1;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+
+    #formulaire-commentaire {
+      background: #e0f7fa;
+      padding: 15px;
+      border-radius: 10px;
+    }
+  </style>
+</body>
+  </html>
