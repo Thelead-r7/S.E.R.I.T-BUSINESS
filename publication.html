@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Publications</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h2>📰 Dernières publications</h2>
+  <div id="publications-container"></div>
+
+  <a href="index.html">
+    <button style="margin-top: 20px;">🏠 Retour à l'accueil</button>
+  </a>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "VOTRE_API_KEY",
+      authDomain: "VOTRE_DOMAINE.firebaseapp.com",
+      projectId: "VOTRE_PROJECT_ID",
+      storageBucket: "VOTRE_BUCKET.appspot.com",
+      messagingSenderId: "VOTRE_MESSAGING_ID",
+      appId: "VOTRE_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const container = document.getElementById('publications-container');
+
+    function renderPublication(id, data) {
+      const div = document.createElement('div');
+      div.className = "publication";
+      div.innerHTML = `
+        <h3>${data.titre}</h3>
+        <img src="${data.imageUrl}" alt="Publication" style="max-width:100%; height:auto;">
+        <p>${data.texte}</p>
+        <small>🗓️ Publié le : ${new Date(data.date).toLocaleDateString()}</small><br>
+        <button onclick="aimer('${id}')">👍 J’aime (<span id="like-${id}">${data.likes || 0}</span>)</button>
+        
+        <div style="margin-top:10px;">
+          <input type="text" id="commentaire-${id}" placeholder="Ajouter un commentaire">
+          <button onclick="commenter('${id}')">Commenter</button>
+          <ul id="liste-commentaires-${id}"></ul>
+        </div>
+        <hr>
+      `;
+      container.appendChild(div);
+
+      // Afficher les commentaires existants
+      if (data.commentaires) {
+        const liste = document.getElementById(`liste-commentaires-${id}`);
+        data.commentaires.forEach(c => {
+          const li = document.createElement('li');
+          li.textContent = c;
+          liste.appendChild(li);
+        });
+      }
+    }
+
+    db.collection("publications").orderBy("date", "desc").onSnapshot(snapshot => {
+      container.innerHTML = "";
+      snapshot.forEach(doc => {
+        renderPublication(doc.id, doc.data());
+      });
+    });
+
+    function aimer(id) {
+      const ref = db.collection("publications").doc(id);
+      ref.update({
+        likes: firebase.firestore.FieldValue.increment(1)
+      });
+    }
+
+    function commenter(id) {
+      const input = document.getElementById(`commentaire-${id}`);
+      const texte = input.value.trim();
+      if (texte) {
+        const ref = db.collection("publications").doc(id);
+        ref.update({
+          commentaires: firebase.firestore.FieldValue.arrayUnion(texte)
+        });
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>
