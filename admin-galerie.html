@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Galerie | SERIT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f7fb;
+      margin: 0; padding: 20px;
+      color: #333;
+    }
+    #admin-header {
+      display: none;
+      text-align: right;
+      margin-bottom: 20px;
+    }
+    #admin-header span {
+      font-weight: 600;
+    }
+    #logout-btn {
+      margin-left: 10px;
+      padding: 6px 12px;
+      background: #0077cc;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    #logout-btn:hover {
+      background: #005fa3;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 450px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #003366;
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button[type="submit"] {
+      background: #0077cc;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button[type="submit"]:hover {
+      background: #005fa3;
+    }
+    #message {
+      margin-top: 15px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="admin-header">
+    <span id="welcome-msg"></span>
+    <button id="logout-btn">Déconnexion</button>
+  </div>
+
+  <form id="upload-form">
+    <label for="title">Titre (optionnel)</label>
+    <input type="text" id="title" placeholder="Titre de l'image" />
+
+    <label for="description">Description (optionnel)</label>
+    <input type="text" id="description" placeholder="Description de l'image" />
+
+    <label for="image-file">Choisir une image</label>
+    <input type="file" id="image-file" accept="image/*" required />
+
+    <button type="submit">Publier l'image</button>
+    <div id="message"></div>
+  </form>
+
+  <!-- Firebase libs (compat pour simplicité) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+  <!-- Ta config Firebase -->
+  <script src="firebase-config.js"></script>
+
+  <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const adminHeader = document.getElementById('admin-header');
+    const welcomeMsg = document.getElementById('welcome-msg');
+    const logoutBtn = document.getElementById('logout-btn');
+    const form = document.getElementById('upload-form');
+    const messageEl = document.getElementById('message');
+
+    // Vérifie si l'utilisateur est connecté
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        adminHeader.style.display = 'block';
+        welcomeMsg.textContent = `Connecté en tant que : ${user.email}`;
+      } else {
+        // Pas connecté : rediriger vers page login
+        window.location.href = 'connexion-admin.html';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      auth.signOut();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.textContent = '';
+      messageEl.style.color = 'black';
+
+      const fileInput = document.getElementById('image-file');
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!fileInput.files.length) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Veuillez choisir un fichier image.';
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const storageRef = storage.ref(`galerie/${Date.now()}_${file.name}`);
+
+      try {
+        // Upload fichier
+        const snapshot = await storageRef.put(file);
+        // Récupérer URL publique
+        const url = await snapshot.ref.getDownloadURL();
+
+        // Enregistrer dans Firestore
+        await db.collection('galerie').add({
+          titre: title || null,
+          description: description || null,
+          imageUrl: url,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        messageEl.style.color = 'green';
+        messageEl.textContent = 'Image publiée avec succès !';
+        form.reset();
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Erreur lors de la publication : ' + error.message;
+      }
+    });
+  </script>
+</body>
+    </html>
