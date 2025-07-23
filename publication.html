@@ -36,8 +36,8 @@
       div.className = "publication";
       div.innerHTML = `
         <h3>${data.titre}</h3>
-        <img src="${data.imageUrl}" alt="Publication" style="max-width:100%; height:auto;">
-        <p>${data.texte}</p>
+<img src="${data.imageURL}" alt="Publication">
+<p>${data.contenu}</p>
         <small>🗓️ Publié le : ${new Date(data.date).toLocaleDateString()}</small><br>
         <button onclick="aimer('${id}')">👍 J’aime (<span id="like-${id}">${data.likes || 0}</span>)</button>
         
