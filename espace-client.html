@@ -2,163 +2,169 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Espace Client</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-</head>
-<body>
-    <a href="index.html" class="retour-accueil">← Retour à l’accueil</a>
-  <h1>Bienvenue sur l'espace client</h1>
+  <style>
+    /* --- Styles globaux --- */
+    body { font-family: Arial, sans-serif; margin: 0; background: #f9f9f9; }
+    header { background: #4CAF50; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 20px; font-weight: bold; }
+    .profile { position: relative; cursor: pointer; }
+    .profile img { width: 40px; height: 40px; border-radius: 50%; }
 
-  <!-- Connexion utilisateur -->
-  <div id="user-section">
-    <button id="loginBtn">Connexion avec Google</button>
-    <span id="user-info"></span>
-  </div>
+    .dropdown { display: none; position: absolute; right: 0; top: 50px; background: white; border: 1px solid #ccc; border-radius: 5px; width: 150px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .dropdown a { display: block; padding: 10px; text-decoration: none; color: #333; }
+    .dropdown a:hover { background: #f2f2f2; }
 
-  <!-- Commentaires visibles par tous -->
-  <section id="commentaires">
-    <h2>Commentaires des clients</h2>
-    <div id="liste-commentaires"></div>
-  </section>
+    main { padding: 20px; max-width: 600px; margin: auto; }
+    #avis-zone { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    #stars .star { font-size: 24px; cursor: pointer; }
+    #blue-star { font-size: 24px; margin-left: 5px; display: none; }
+    textarea { width: 100%; height: 80px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
+    button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; }
+    button:hover { background: #388E3C; }
 
-  <!-- Formulaire de commentaire (visible seulement connecté) -->
-  <section id="formulaire-commentaire" style="display:none;">
-    <h3>Laisser un commentaire</h3>
-    <div id="stars">
-      <span class="star" data-value="1">⭐</span>
-      <span class="star" data-value="2">⭐</span>
-      <span class="star" data-value="3">⭐</span>
-      <span class="star" data-value="4">⭐</span>
-      <span class="star" data-value="5">⭐</span>
-    </div>
-    <div id="blue-star" style="display:none;">
-      <label><input type="checkbox" id="etoile-bleue" /> Je suis extrêmement heureux 😊💙</label>
-    </div>
-    <textarea id="commentaire" placeholder="Votre avis..."></textarea>
-    <button id="envoyerCommentaire">Envoyer</button>
-  </section>
+    .commentaire { background: white; border-radius: 5px; padding: 15px; margin-bottom: 15px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .commentaire-etoiles { margin-bottom: 5px; }
+  </style>
 
-  <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
-  authDomain: "serit-societe.firebaseapp.com",
-  projectId: "serit-societe",
-  storageBucket: "serit-societe.appspot.com",
-  messagingSenderId: "25581120285",
-  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
-};
-    
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Sélection d'éléments
-    const loginBtn = document.getElementById('loginBtn');
-    const userInfo = document.getElementById('user-info');
-    const formSection = document.getElementById('formulaire-commentaire');
-    const listeCommentaires = document.getElementById('liste-commentaires');
-    const stars = document.querySelectorAll('.star');
-    const blueStar = document.getElementById('blue-star');
+    const firebaseConfig = { /* Remplace par tes infos */ };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
     let note = 0;
 
-    // Authentification
-    loginBtn.onclick = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
-    };
+    window.onload = () => {
+      const loginBtn = document.getElementById('loginBtn');
+      const profilPic = document.getElementById('user-photo');
+      const userName = document.getElementById('user-name');
+      const dropdown = document.querySelector('.dropdown');
+      const profile = document.querySelector('.profile');
+      const formZone = document.getElementById('avis-zone');
+      const stars = document.querySelectorAll('.star');
+      const blueStar = document.getElementById('blue-star');
+      const submitBtn = document.getElementById('submitAvis');
+      const textarea = document.getElementById('textAvis');
+      
+      profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      });
+      window.addEventListener('click', e => {
+        if (!e.target.closest('.profile')) dropdown.style.display = 'none';
+      });
+      document.getElementById('logout').addEventListener('click', () => signOut(auth));
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        userInfo.textContent = `Connecté : ${user.displayName}`;
-        formSection.style.display = 'block';
-        loginBtn.style.display = 'none';
-      }
-    });
+      loginBtn.addEventListener('click', () => {
+        signInWithPopup(auth, new GoogleAuthProvider());
+      });
 
-    // Gestion des étoiles
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        note = parseInt(star.dataset.value);
-        stars.forEach(s => s.textContent = '⭐');
-        for (let i = 0; i < note; i++) {
-          stars[i].textContent = '🟡';
+      stars.forEach(s => s.addEventListener('click', () => {
+        note = parseInt(s.dataset.value);
+        stars.forEach(st => st.textContent = '⭐');
+        for (let i = 0; i < note; i++) stars[i].textContent = '🟡';
+        blueStar.style.display = note === 5 ? 'inline' : 'none';
+      }));
+
+      submitBtn.addEventListener('click', async () => {
+        const texte = textarea.value.trim();
+        const etoileBleue = blueStar.dataset.active === 'true';
+        if (!auth.currentUser || note === 0 || texte === "") {
+          alert("Connectez-vous et remplissez tous les champs !");
+          return;
         }
-        blueStar.style.display = note === 5 ? 'block' : 'none';
-      });
-    });
-
-    // Envoi commentaire
-    document.getElementById('envoyerCommentaire').onclick = async () => {
-      const commentaire = document.getElementById('commentaire').value.trim();
-      const etoileBleue = document.getElementById('etoile-bleue').checked;
-      const user = auth.currentUser;
-
-      if (!user || note === 0 || commentaire === "") {
-        alert("Connectez-vous et remplissez tous les champs !");
-        return;
-      }
-
-      await db.collection("commentaires").add({
-        nom: user.displayName,
-        commentaire,
-        note,
-        etoileBleue,
-        date: new Date().toISOString()
+        await addDoc(collection(db, "avis"), {
+          uid: auth.currentUser.uid,
+          nom: auth.currentUser.displayName,
+          photo: auth.currentUser.photoURL || "",
+          texte,
+          note,
+          etoileBleue: note === 5,
+          date: serverTimestamp()
+        });
+        textarea.value = "";
+        stars.forEach(st => st.textContent = '⭐');
+        note = 0;
+        blueStar.style.display = 'none';
+        formZone.style.display = 'none';
+        fetchAvis();
       });
 
-      document.getElementById('commentaire').value = "";
-      document.getElementById('etoile-bleue').checked = false;
-      alert("Commentaire envoyé !");
-      afficherCommentaires();
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          profilPic.src = user.photoURL || '/';
+          userName.textContent = user.displayName || "";
+          loginBtn.style.display = 'none';
+          formZone.style.display = 'block';
+        } else {
+          profilPic.src = "https://via.placeholder.com/40";
+          userName.textContent = "Invité";
+          loginBtn.style.display = 'inline';
+          formZone.style.display = 'none';
+        }
+      });
+
+      fetchAvis();
     };
 
-    // Affichage des commentaires
-    async function afficherCommentaires() {
-      const snap = await db.collection("commentaires").orderBy("date", "desc").get();
-      listeCommentaires.innerHTML = "";
+    async function fetchAvis() {
+      const liste = document.getElementById('liste-avis');
+      liste.innerHTML = "";
+      const q = query(collection(db, "avis"), orderBy("date", "desc"));
+      const snap = await getDocs(q);
       snap.forEach(doc => {
-        const data = doc.data();
+        const d = doc.data();
         const div = document.createElement('div');
         div.className = 'commentaire';
-        div.innerHTML = `
-          <strong>${data.nom}</strong> (${data.note} étoiles${data.etoileBleue ? ' 💙' : ''})<br>
-          ${data.commentaire}<hr/>
-        `;
-        listeCommentaires.appendChild(div);
+        const etoiles = '⭐'.repeat(d.note) + '☆'.repeat(5 - d.note) + (d.note === 5 ? ' 🔵' : '');
+        div.innerHTML = `<div class="commentaire-etoiles">${etoiles}</div>
+                         <strong>${d.nom}</strong><p>${d.texte}</p>`;
+        liste.appendChild(div);
       });
     }
-
-    afficherCommentaires();
   </script>
+</head>
 
-  <style>
-    #stars .star {
-      font-size: 24px;
-      cursor: pointer;
-    }
+<body>
+  <header>
+    <div class="logo">Espace Client</div>
+    <div class="profile">
+      <img id="user-photo" src="https://via.placeholder.com/40" alt="Profil" />
+      <div class="dropdown">
+        <a href="#" id="logout">Se déconnecter</a>
+      </div>
+    </div>
+  </header>
 
-    textarea {
-      width: 100%;
-      height: 80px;
-      margin: 10px 0;
-    }
+  <main>
+    <h2>Bonjour <span id="user-name">Invité</span>!</h2>
+    <button id="loginBtn">Connexion avec Google</button>
 
-    .commentaire {
-      background: #f1f1f1;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-    }
+    <div id="avis-zone" style="display:none; margin-top:20px;">
+      <h3>Laisser un avis</h3>
+      <div id="stars">
+        <span class="star" data-value="1">⭐</span>
+        <span class="star" data-value="2">⭐</span>
+        <span class="star" data-value="3">⭐</span>
+        <span class="star" data-value="4">⭐</span>
+        <span class="star" data-value="5">⭐</span>
+        <span id="blue-star">🔵</span>
+      </div>
+      <textarea id="textAvis" placeholder="Votre avis..."></textarea>
+      <button id="submitAvis">Envoyer l’avis</button>
+    </div>
 
-    #formulaire-commentaire {
-      background: #e0f7fa;
-      padding: 15px;
-      border-radius: 10px;
-    }
-  </style>
+    <section style="margin-top:30px;">
+      <h2>Avis des clients</h2>
+      <div id="liste-avis"></div>
+    </section>
+  </main>
 </body>
   </html>
