@@ -1,252 +1,236 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace Client</title>
+  <meta charset="UTF-8" />
+  <title>Commentaires Clients</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 0;
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
     }
 
-    .header {
-      background-color: #ff9900;
-      color: white;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
+    #user-section {
+      margin-bottom: 20px;
+    }
+
+    #profil-utilisateur {
+      display: none;
       align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-    }
-
-    .user-info img {
+    #profil-utilisateur img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      margin-right: 10px;
     }
 
-    .stars {
-      display: flex;
-      gap: 5px;
+    #rating {
+      direction: rtl;
+      unicode-bidi: bidi-override;
+    }
+
+    #rating span {
+      font-size: 2em;
       cursor: pointer;
-      font-size: 24px;
-      margin: 10px 0;
+      color: lightgray;
     }
 
-    .stars span {
-      color: #ccc;
-    }
-
-    .stars span.active {
+    #rating span.hover,
+    #rating span.selected {
       color: gold;
     }
 
-    .blue-star {
-      color: dodgerblue;
-      font-size: 24px;
-      display: none;
-      cursor: pointer;
+    #rating span.blue {
+      color: deepskyblue;
     }
 
-    .comment-box {
+    .commentaire {
       background: white;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 8px;
-    }
-
-    #avis-list {
-      margin: 20px;
-    }
-
-    .avis {
-      background: white;
-      margin-bottom: 10px;
       padding: 10px;
-      border-left: 4px solid #ff9900;
-      border-radius: 5px;
+      border-radius: 8px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .btn {
-      background-color: #ff9900;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
+    .commentaire strong {
+      display: block;
+      margin-bottom: 5px;
     }
 
-    .btn:hover {
-      background-color: #e68a00;
+    .commentaire .date {
+      font-size: 0.9em;
+      color: gray;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="user-info" id="user-profile" style="display:none;">
-      <img id="user-pic" src="" alt="User">
+  <h1>Commentaires clients</h1>
+
+  <div id="user-section">
+    <div id="profil-utilisateur">
+      <img id="user-photo" src="" />
       <span id="user-name"></span>
+      <button id="logoutBtn">Se déconnecter</button>
     </div>
-    <button id="logoutBtn" class="btn" style="display:none;">Se déconnecter</button>
+    <button id="loginBtn">Connexion avec Google</button>
   </div>
 
-  <div class="comment-box">
-    <textarea id="comment" placeholder="Votre avis..." rows="4" style="width:100%;"></textarea>
-    <div class="stars" id="star-container">
-      <span data-value="1">★</span>
-      <span data-value="2">★</span>
-      <span data-value="3">★</span>
-      <span data-value="4">★</span>
+  <div id="form-section" style="display:none;">
+    <div id="rating">
       <span data-value="5">★</span>
+      <span data-value="4">★</span>
+      <span data-value="3">★</span>
+      <span data-value="2">★</span>
+      <span data-value="1">★</span>
     </div>
-    <span id="blue-star" class="blue-star">🔵</span>
-    <button class="btn" onclick="envoyerAvis()">Envoyer</button>
+    <textarea id="comment" placeholder="Votre avis..." rows="4" cols="30"></textarea><br>
+    <button id="submit">Envoyer</button>
   </div>
 
-  <div id="avis-list"></div>
+  <h2>Ce que disent les autres :</h2>
+  <div id="commentaires"></div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // 🔧 CONFIG FIREBASE ICI
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
-  authDomain: "serit-societe.firebaseapp.com",
-  projectId: "serit-societe",
-  storageBucket: "serit-societe.firebasestorage.app",
-  messagingSenderId: "25581120285",
-  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+    const firebaseConfig = {
+      apiKey: "TA_CLE_API",
+      authDomain: "TON_PROJET.firebaseapp.com",
+      projectId: "TON_PROJET",
+      storageBucket: "TON_PROJET.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let selectedRating = 0;
-    let blueStar = false;
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const profilDiv = document.getElementById("profil-utilisateur");
+    const formSection = document.getElementById("form-section");
+    const ratingStars = document.querySelectorAll("#rating span");
+    const commentInput = document.getElementById("comment");
+    const submitBtn = document.getElementById("submit");
+    const commentairesDiv = document.getElementById("commentaires");
+    const userPhoto = document.getElementById("user-photo");
+    const userName = document.getElementById("user-name");
 
-    const stars = document.querySelectorAll("#star-container span");
-    const blueStarIcon = document.getElementById("blue-star");
+    let currentUser = null;
+    let selectedNote = 0;
 
-    stars.forEach(star => {
-      star.addEventListener("click", () => {
-        selectedRating = parseInt(star.getAttribute("data-value"));
-        updateStars();
-      });
-    });
-
-    function updateStars() {
-      stars.forEach(star => {
-        star.classList.remove("active");
-        if (parseInt(star.getAttribute("data-value")) <= selectedRating) {
-          star.classList.add("active");
-        }
-      });
-      if (selectedRating === 5) {
-        blueStarIcon.style.display = "inline";
-      } else {
-        blueStarIcon.style.display = "none";
-        blueStar = false;
-      }
-    }
-
-    blueStarIcon.addEventListener("click", () => {
-      blueStar = !blueStar;
-      blueStarIcon.style.opacity = blueStar ? "1" : "0.3";
-    });
-
-    async function envoyerAvis() {
-      const commentaire = document.getElementById("comment").value;
-      const user = auth.currentUser;
-
-      if (!user) {
-        alert("Connectez-vous avec Gmail pour poster un avis.");
-        return;
-      }
-
-      if (!commentaire || selectedRating === 0) {
-        alert("Veuillez écrire un commentaire et donner une note.");
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, "avis"), {
-          nom: user.displayName,
-          photo: user.photoURL,
-          commentaire,
-          note: selectedRating,
-          etoileBleue: blueStar,
-          date: serverTimestamp()
+    // Affichage étoiles
+    ratingStars.forEach(star => {
+      star.addEventListener("mouseover", () => {
+        ratingStars.forEach(s => s.classList.remove("hover"));
+        let val = parseInt(star.dataset.value);
+        ratingStars.forEach(s => {
+          if (parseInt(s.dataset.value) <= val) s.classList.add("hover");
         });
+      });
 
-        document.getElementById("comment").value = "";
-        selectedRating = 0;
-        blueStar = false;
-        updateStars();
-        afficherAvis();
+      star.addEventListener("mouseout", () => {
+        ratingStars.forEach(s => s.classList.remove("hover"));
+      });
 
+      star.addEventListener("click", () => {
+        selectedNote = parseInt(star.dataset.value);
+        ratingStars.forEach(s => s.classList.remove("selected", "blue"));
+        ratingStars.forEach(s => {
+          if (parseInt(s.dataset.value) <= selectedNote) {
+            if (selectedNote === 5) s.classList.add("blue");
+            else s.classList.add("selected");
+          }
+        });
+      });
+    });
+
+    // Connexion
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
       } catch (e) {
-        console.error("Erreur lors de l’envoi :", e);
+        alert("Erreur de connexion : " + e.message);
       }
-    }
+    });
 
-    async function afficherAvis() {
-      const avisList = document.getElementById("avis-list");
-      avisList.innerHTML = "";
+    // Déconnexion
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      location.reload();
+    });
 
-      const querySnapshot = await getDocs(collection(db, "avis"));
-      querySnapshot.forEach((doc) => {
+    // Gestion de session
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        profilDiv.style.display = "flex";
+        loginBtn.style.display = "none";
+        formSection.style.display = "block";
+        userName.textContent = user.displayName;
+        userPhoto.src = user.photoURL;
+
+        // Vérifie si utilisateur a déjà commenté
+        const q = query(collection(db, "commentaires"), where("uid", "==", user.uid));
+        const docs = await getDocs(q);
+        if (!docs.empty) {
+          formSection.style.display = "none";
+        }
+      }
+    });
+
+    // Envoi commentaire
+    submitBtn.addEventListener("click", async () => {
+      if (!currentUser || selectedNote === 0 || commentInput.value.trim() === "") {
+        alert("Veuillez remplir tous les champs.");
+        return;
+      }
+
+      await addDoc(collection(db, "commentaires"), {
+        uid: currentUser.uid,
+        nom: currentUser.displayName,
+        photo: currentUser.photoURL,
+        commentaire: commentInput.value.trim(),
+        note: selectedNote,
+        date: new Date().toISOString()
+      });
+
+      alert("Commentaire envoyé !");
+      formSection.style.display = "none";
+    });
+
+    // Chargement des commentaires
+    async function afficherCommentaires() {
+      const commentairesSnap = await getDocs(collection(db, "commentaires"));
+      commentairesDiv.innerHTML = "";
+
+      commentairesSnap.forEach(doc => {
         const data = doc.data();
-        const avis = document.createElement("div");
-        avis.classList.add("avis");
+        const date = new Date(data.date).toLocaleDateString("fr-FR");
 
-        avis.innerHTML = `
-          <strong><img src="${data.photo}" width="20" height="20" style="border-radius:50%;"> ${data.nom}</strong><br>
-          ${"⭐".repeat(data.note)} ${data.etoileBleue ? "🔵" : ""}<br>
-          ${data.commentaire}
+        const div = document.createElement("div");
+        div.className = "commentaire";
+        div.innerHTML = `
+          <strong>${data.nom}</strong>
+          <span class="date">${date}</span><br>
+          ${"⭐".repeat(data.note)}${data.note === 5 ? " 💙" : ""}
+          <p>${data.commentaire}</p>
         `;
-        avisList.appendChild(avis);
+        commentairesDiv.appendChild(div);
       });
     }
 
-    // Auth
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("user-profile").style.display = "flex";
-        document.getElementById("user-name").textContent = user.displayName;
-        document.getElementById("user-pic").src = user.photoURL;
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        afficherAvis();
-      } else {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(console.error);
-      }
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      signOut(auth).then(() => location.reload());
-    });
+    afficherCommentaires();
   </script>
 </body>
-        </html>
+  </html>
