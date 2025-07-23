@@ -5,6 +5,7 @@
   <title>Publications</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <!-- Firebase v9 compat (pour utiliser firebase.firestore() et firebase.initializeApp()) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 </head>
@@ -17,24 +18,17 @@
   </a>
 
   <script>
-    
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+      authDomain: "serit-societe.firebaseapp.com",
+      projectId: "serit-societe",
+      storageBucket: "serit-societe.appspot.com", // ✅ corrigé ici
+      messagingSenderId: "25581120285",
+      appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
+    };
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
-  authDomain: "serit-societe.firebaseapp.com",
-  projectId: "serit-societe",
-  storageBucket: "serit-societe.firebasestorage.app",
-  messagingSenderId: "25581120285",
-  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+    // Initialisation
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -43,10 +37,16 @@ const app = initializeApp(firebaseConfig);
     function renderPublication(id, data) {
       const div = document.createElement('div');
       div.className = "publication";
+
+      // ✅ Utilisation correcte de imageUrl (minuscule)
+      const imageHTML = data.imageUrl
+        ? `<img src="${data.imageUrl}" alt="Publication" style="max-width: 100%; height: auto;">`
+        : '';
+
       div.innerHTML = `
         <h3>${data.titre}</h3>
-<img src="${data.imageURL}" alt="Publication">
-<p>${data.contenu}</p>
+        ${imageHTML}
+        <p>${data.contenu}</p>
         <small>🗓️ Publié le : ${new Date(data.date).toLocaleDateString()}</small><br>
         <button onclick="aimer('${id}')">👍 J’aime (<span id="like-${id}">${data.likes || 0}</span>)</button>
         
@@ -70,6 +70,7 @@ const app = initializeApp(firebaseConfig);
       }
     }
 
+    // Affichage des publications
     db.collection("publications").orderBy("date", "desc").onSnapshot(snapshot => {
       container.innerHTML = "";
       snapshot.forEach(doc => {
@@ -77,6 +78,7 @@ const app = initializeApp(firebaseConfig);
       });
     });
 
+    // J’aime
     function aimer(id) {
       const ref = db.collection("publications").doc(id);
       ref.update({
@@ -84,6 +86,7 @@ const app = initializeApp(firebaseConfig);
       });
     }
 
+    // Commentaire
     function commenter(id) {
       const input = document.getElementById(`commentaire-${id}`);
       const texte = input.value.trim();
@@ -97,4 +100,4 @@ const app = initializeApp(firebaseConfig);
     }
   </script>
 </body>
-</html>
+  </html>
