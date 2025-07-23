@@ -1,236 +1,207 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Commentaires Clients</title>
+  <meta charset="UTF-8">
+  <title>Espace Client</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
       padding: 20px;
-      background: #f9f9f9;
     }
 
-    #user-section {
-      margin-bottom: 20px;
+    h1 {
+      color: #333;
     }
 
-    #profil-utilisateur {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+    .comment-box, .comment-list, #user-info {
+      background: #fff;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    #profil-utilisateur img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-    }
-
-    #rating {
-      direction: rtl;
-      unicode-bidi: bidi-override;
-    }
-
-    #rating span {
-      font-size: 2em;
+    .stars span {
+      font-size: 30px;
       cursor: pointer;
-      color: lightgray;
     }
 
-    #rating span.hover,
-    #rating span.selected {
-      color: gold;
+    .comment {
+      text-align: left;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
     }
 
-    #rating span.blue {
-      color: deepskyblue;
+    #login, #logout {
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
-    .commentaire {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin: 10px 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    #logout {
+      background-color: #DB4437;
     }
 
-    .commentaire strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .commentaire .date {
-      font-size: 0.9em;
-      color: gray;
+    img {
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
 
-  <h1>Commentaires clients</h1>
+  <h1>Espace Client</h1>
 
-  <div id="user-section">
-    <div id="profil-utilisateur">
-      <img id="user-photo" src="" />
-      <span id="user-name"></span>
-      <button id="logoutBtn">Se déconnecter</button>
+  <button id="login">Se connecter avec Google</button>
+  <button id="logout" style="display: none;">Se déconnecter</button>
+
+  <div id="user-info" style="display: none;"></div>
+
+  <div class="comment-box" style="display: none;">
+    <h2>Laissez un commentaire</h2>
+    <div class="stars" id="star-rating">
+      <span data-star="1">☆</span>
+      <span data-star="2">☆</span>
+      <span data-star="3">☆</span>
+      <span data-star="4">☆</span>
+      <span data-star="5">☆</span>
     </div>
-    <button id="loginBtn">Connexion avec Google</button>
+    <textarea id="comment" rows="4" cols="50" placeholder="Votre commentaire..."></textarea><br><br>
+    <button id="submit-comment">Envoyer</button>
   </div>
 
-  <div id="form-section" style="display:none;">
-    <div id="rating">
-      <span data-value="5">★</span>
-      <span data-value="4">★</span>
-      <span data-value="3">★</span>
-      <span data-value="2">★</span>
-      <span data-value="1">★</span>
-    </div>
-    <textarea id="comment" placeholder="Votre avis..." rows="4" cols="30"></textarea><br>
-    <button id="submit">Envoyer</button>
+  <div class="comment-list">
+    <h2>Commentaires</h2>
+    <div id="comments-container"></div>
   </div>
 
-  <h2>Ce que disent les autres :</h2>
-  <div id="commentaires"></div>
-
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "TA_CLE_API",
-      authDomain: "TON_PROJET.firebaseapp.com",
-      projectId: "TON_PROJET",
-      storageBucket: "TON_PROJET.appspot.com",
-      messagingSenderId: "XXXX",
-      appId: "XXXX"
+      apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+      authDomain: "serit-societe.firebaseapp.com",
+      projectId: "serit-societe",
+      storageBucket: "serit-societe.appspot.com",
+      messagingSenderId: "25581120285",
+      appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const profilDiv = document.getElementById("profil-utilisateur");
-    const formSection = document.getElementById("form-section");
-    const ratingStars = document.querySelectorAll("#rating span");
+    const loginBtn = document.getElementById("login");
+    const logoutBtn = document.getElementById("logout");
+    const userInfo = document.getElementById("user-info");
+    const commentBox = document.querySelector(".comment-box");
+    const submitBtn = document.getElementById("submit-comment");
     const commentInput = document.getElementById("comment");
-    const submitBtn = document.getElementById("submit");
-    const commentairesDiv = document.getElementById("commentaires");
-    const userPhoto = document.getElementById("user-photo");
-    const userName = document.getElementById("user-name");
+    const starRating = document.getElementById("star-rating");
+    const commentsContainer = document.getElementById("comments-container");
 
+    let selectedRating = 0;
     let currentUser = null;
-    let selectedNote = 0;
 
-    // Affichage étoiles
-    ratingStars.forEach(star => {
-      star.addEventListener("mouseover", () => {
-        ratingStars.forEach(s => s.classList.remove("hover"));
-        let val = parseInt(star.dataset.value);
-        ratingStars.forEach(s => {
-          if (parseInt(s.dataset.value) <= val) s.classList.add("hover");
-        });
-      });
+    loginBtn.onclick = () => signInWithPopup(auth, provider);
+    logoutBtn.onclick = () => signOut(auth);
 
-      star.addEventListener("mouseout", () => {
-        ratingStars.forEach(s => s.classList.remove("hover"));
-      });
-
-      star.addEventListener("click", () => {
-        selectedNote = parseInt(star.dataset.value);
-        ratingStars.forEach(s => s.classList.remove("selected", "blue"));
-        ratingStars.forEach(s => {
-          if (parseInt(s.dataset.value) <= selectedNote) {
-            if (selectedNote === 5) s.classList.add("blue");
-            else s.classList.add("selected");
-          }
-        });
-      });
-    });
-
-    // Connexion
-    loginBtn.addEventListener("click", async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (e) {
-        alert("Erreur de connexion : " + e.message);
-      }
-    });
-
-    // Déconnexion
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      location.reload();
-    });
-
-    // Gestion de session
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
-        profilDiv.style.display = "flex";
         loginBtn.style.display = "none";
-        formSection.style.display = "block";
-        userName.textContent = user.displayName;
-        userPhoto.src = user.photoURL;
-
-        // Vérifie si utilisateur a déjà commenté
-        const q = query(collection(db, "commentaires"), where("uid", "==", user.uid));
-        const docs = await getDocs(q);
-        if (!docs.empty) {
-          formSection.style.display = "none";
-        }
+        logoutBtn.style.display = "inline-block";
+        userInfo.style.display = "block";
+        commentBox.style.display = "block";
+        userInfo.innerHTML = `<p>Bienvenue, ${user.displayName}</p><img src="${user.photoURL}" width="50">`;
+      } else {
+        currentUser = null;
+        loginBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+        userInfo.style.display = "none";
+        commentBox.style.display = "none";
       }
     });
 
-    // Envoi commentaire
-    submitBtn.addEventListener("click", async () => {
-      if (!currentUser || selectedNote === 0 || commentInput.value.trim() === "") {
-        alert("Veuillez remplir tous les champs.");
+    starRating.addEventListener("click", (e) => {
+      if (e.target.dataset.star) {
+        selectedRating = parseInt(e.target.dataset.star);
+        updateStarDisplay();
+      }
+    });
+
+    function updateStarDisplay() {
+      [...starRating.children].forEach((span, i) => {
+        if (i < selectedRating) {
+          span.textContent = "★";
+          span.style.color = selectedRating === 5 && i === 4 ? "blue" : "gold";
+        } else {
+          span.textContent = "☆";
+          span.style.color = "black";
+        }
+      });
+    }
+
+    submitBtn.onclick = async () => {
+      if (!currentUser || selectedRating === 0 || commentInput.value.trim() === "") {
+        alert("Veuillez remplir tous les champs !");
         return;
       }
 
-      await addDoc(collection(db, "commentaires"), {
-        uid: currentUser.uid,
+      const q = query(collection(db, "avis"), where("email", "==", currentUser.email));
+      const existing = await getDocs(q);
+      if (!existing.empty) {
+        alert("Vous avez déjà laissé un avis.");
+        return;
+      }
+
+      await addDoc(collection(db, "avis"), {
         nom: currentUser.displayName,
+        email: currentUser.email,
+        commentaire: commentInput.value,
+        note: selectedRating,
         photo: currentUser.photoURL,
-        commentaire: commentInput.value.trim(),
-        note: selectedNote,
         date: new Date().toISOString()
       });
 
-      alert("Commentaire envoyé !");
-      formSection.style.display = "none";
-    });
+      alert("Merci pour votre commentaire !");
+      commentInput.value = "";
+      selectedRating = 0;
+      updateStarDisplay();
+      afficherCommentaires();
+    };
 
-    // Chargement des commentaires
     async function afficherCommentaires() {
-      const commentairesSnap = await getDocs(collection(db, "commentaires"));
-      commentairesDiv.innerHTML = "";
-
-      commentairesSnap.forEach(doc => {
+      commentsContainer.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "avis"));
+      querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const date = new Date(data.date).toLocaleDateString("fr-FR");
-
         const div = document.createElement("div");
-        div.className = "commentaire";
+        div.classList.add("comment");
+        const etoiles = "★".repeat(data.note) + "☆".repeat(5 - data.note);
+        const couleur = data.note === 5 ? "blue" : "gold";
         div.innerHTML = `
-          <strong>${data.nom}</strong>
-          <span class="date">${date}</span><br>
-          ${"⭐".repeat(data.note)}${data.note === 5 ? " 💙" : ""}
+          <img src="${data.photo}" width="30" /> <strong>${data.nom}</strong><br>
+          <span style="color:${couleur}; font-size:20px;">${etoiles}</span><br>
           <p>${data.commentaire}</p>
         `;
-        commentairesDiv.appendChild(div);
+        commentsContainer.appendChild(div);
       });
     }
 
     afficherCommentaires();
   </script>
+
 </body>
-  </html>
+      </html>
