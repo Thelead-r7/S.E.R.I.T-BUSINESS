@@ -1,170 +1,252 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Espace Client</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* --- Styles globaux --- */
-    body { font-family: Arial, sans-serif; margin: 0; background: #f9f9f9; }
-    header { background: #4CAF50; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 20px; font-weight: bold; }
-    .profile { position: relative; cursor: pointer; }
-    .profile img { width: 40px; height: 40px; border-radius: 50%; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
 
-    .dropdown { display: none; position: absolute; right: 0; top: 50px; background: white; border: 1px solid #ccc; border-radius: 5px; width: 150px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .dropdown a { display: block; padding: 10px; text-decoration: none; color: #333; }
-    .dropdown a:hover { background: #f2f2f2; }
+    .header {
+      background-color: #ff9900;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-    main { padding: 20px; max-width: 600px; margin: auto; }
-    #avis-zone { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    #stars .star { font-size: 24px; cursor: pointer; }
-    #blue-star { font-size: 24px; margin-left: 5px; display: none; }
-    textarea { width: 100%; height: 80px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
-    button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; }
-    button:hover { background: #388E3C; }
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
 
-    .commentaire { background: white; border-radius: 5px; padding: 15px; margin-bottom: 15px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-    .commentaire-etoiles { margin-bottom: 5px; }
+    .user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .stars {
+      display: flex;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .stars span {
+      color: #ccc;
+    }
+
+    .stars span.active {
+      color: gold;
+    }
+
+    .blue-star {
+      color: dodgerblue;
+      font-size: 24px;
+      display: none;
+      cursor: pointer;
+    }
+
+    .comment-box {
+      background: white;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+    }
+
+    #avis-list {
+      margin: 20px;
+    }
+
+    .avis {
+      background: white;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-left: 4px solid #ff9900;
+      border-radius: 5px;
+    }
+
+    .btn {
+      background-color: #ff9900;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #e68a00;
+    }
   </style>
+</head>
+<body>
 
-  <!-- Firebase SDK -->
+  <div class="header">
+    <div class="user-info" id="user-profile" style="display:none;">
+      <img id="user-pic" src="" alt="User">
+      <span id="user-name"></span>
+    </div>
+    <button id="logoutBtn" class="btn" style="display:none;">Se déconnecter</button>
+  </div>
+
+  <div class="comment-box">
+    <textarea id="comment" placeholder="Votre avis..." rows="4" style="width:100%;"></textarea>
+    <div class="stars" id="star-container">
+      <span data-value="1">★</span>
+      <span data-value="2">★</span>
+      <span data-value="3">★</span>
+      <span data-value="4">★</span>
+      <span data-value="5">★</span>
+    </div>
+    <span id="blue-star" class="blue-star">🔵</span>
+    <button class="btn" onclick="envoyerAvis()">Envoyer</button>
+  </div>
+
+  <div id="avis-list"></div>
+
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = { /* Remplace par tes infos */ };
+    // 🔧 CONFIG FIREBASE ICI
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+  authDomain: "serit-societe.firebaseapp.com",
+  projectId: "serit-societe",
+  storageBucket: "serit-societe.firebasestorage.app",
+  messagingSenderId: "25581120285",
+  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let note = 0;
+    let selectedRating = 0;
+    let blueStar = false;
 
-    window.onload = () => {
-      const loginBtn = document.getElementById('loginBtn');
-      const profilPic = document.getElementById('user-photo');
-      const userName = document.getElementById('user-name');
-      const dropdown = document.querySelector('.dropdown');
-      const profile = document.querySelector('.profile');
-      const formZone = document.getElementById('avis-zone');
-      const stars = document.querySelectorAll('.star');
-      const blueStar = document.getElementById('blue-star');
-      const submitBtn = document.getElementById('submitAvis');
-      const textarea = document.getElementById('textAvis');
-      
-      profile.addEventListener('click', () => {
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    const stars = document.querySelectorAll("#star-container span");
+    const blueStarIcon = document.getElementById("blue-star");
+
+    stars.forEach(star => {
+      star.addEventListener("click", () => {
+        selectedRating = parseInt(star.getAttribute("data-value"));
+        updateStars();
       });
-      window.addEventListener('click', e => {
-        if (!e.target.closest('.profile')) dropdown.style.display = 'none';
-      });
-      document.getElementById('logout').addEventListener('click', () => signOut(auth));
+    });
 
-      loginBtn.addEventListener('click', () => {
-        signInWithPopup(auth, new GoogleAuthProvider());
-      });
-
-      stars.forEach(s => s.addEventListener('click', () => {
-        note = parseInt(s.dataset.value);
-        stars.forEach(st => st.textContent = '⭐');
-        for (let i = 0; i < note; i++) stars[i].textContent = '🟡';
-        blueStar.style.display = note === 5 ? 'inline' : 'none';
-      }));
-
-      submitBtn.addEventListener('click', async () => {
-        const texte = textarea.value.trim();
-        const etoileBleue = blueStar.dataset.active === 'true';
-        if (!auth.currentUser || note === 0 || texte === "") {
-          alert("Connectez-vous et remplissez tous les champs !");
-          return;
+    function updateStars() {
+      stars.forEach(star => {
+        star.classList.remove("active");
+        if (parseInt(star.getAttribute("data-value")) <= selectedRating) {
+          star.classList.add("active");
         }
+      });
+      if (selectedRating === 5) {
+        blueStarIcon.style.display = "inline";
+      } else {
+        blueStarIcon.style.display = "none";
+        blueStar = false;
+      }
+    }
+
+    blueStarIcon.addEventListener("click", () => {
+      blueStar = !blueStar;
+      blueStarIcon.style.opacity = blueStar ? "1" : "0.3";
+    });
+
+    async function envoyerAvis() {
+      const commentaire = document.getElementById("comment").value;
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Connectez-vous avec Gmail pour poster un avis.");
+        return;
+      }
+
+      if (!commentaire || selectedRating === 0) {
+        alert("Veuillez écrire un commentaire et donner une note.");
+        return;
+      }
+
+      try {
         await addDoc(collection(db, "avis"), {
-          uid: auth.currentUser.uid,
-          nom: auth.currentUser.displayName,
-          photo: auth.currentUser.photoURL || "",
-          texte,
-          note,
-          etoileBleue: note === 5,
+          nom: user.displayName,
+          photo: user.photoURL,
+          commentaire,
+          note: selectedRating,
+          etoileBleue: blueStar,
           date: serverTimestamp()
         });
-        textarea.value = "";
-        stars.forEach(st => st.textContent = '⭐');
-        note = 0;
-        blueStar.style.display = 'none';
-        formZone.style.display = 'none';
-        fetchAvis();
-      });
 
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          profilPic.src = user.photoURL || '/';
-          userName.textContent = user.displayName || "";
-          loginBtn.style.display = 'none';
-          formZone.style.display = 'block';
-        } else {
-          profilPic.src = "https://via.placeholder.com/40";
-          userName.textContent = "Invité";
-          loginBtn.style.display = 'inline';
-          formZone.style.display = 'none';
-        }
-      });
+        document.getElementById("comment").value = "";
+        selectedRating = 0;
+        blueStar = false;
+        updateStars();
+        afficherAvis();
 
-      fetchAvis();
-    };
+      } catch (e) {
+        console.error("Erreur lors de l’envoi :", e);
+      }
+    }
 
-    async function fetchAvis() {
-      const liste = document.getElementById('liste-avis');
-      liste.innerHTML = "";
-      const q = query(collection(db, "avis"), orderBy("date", "desc"));
-      const snap = await getDocs(q);
-      snap.forEach(doc => {
-        const d = doc.data();
-        const div = document.createElement('div');
-        div.className = 'commentaire';
-        const etoiles = '⭐'.repeat(d.note) + '☆'.repeat(5 - d.note) + (d.note === 5 ? ' 🔵' : '');
-        div.innerHTML = `<div class="commentaire-etoiles">${etoiles}</div>
-                         <strong>${d.nom}</strong><p>${d.texte}</p>`;
-        liste.appendChild(div);
+    async function afficherAvis() {
+      const avisList = document.getElementById("avis-list");
+      avisList.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "avis"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const avis = document.createElement("div");
+        avis.classList.add("avis");
+
+        avis.innerHTML = `
+          <strong><img src="${data.photo}" width="20" height="20" style="border-radius:50%;"> ${data.nom}</strong><br>
+          ${"⭐".repeat(data.note)} ${data.etoileBleue ? "🔵" : ""}<br>
+          ${data.commentaire}
+        `;
+        avisList.appendChild(avis);
       });
     }
+
+    // Auth
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("user-profile").style.display = "flex";
+        document.getElementById("user-name").textContent = user.displayName;
+        document.getElementById("user-pic").src = user.photoURL;
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        afficherAvis();
+      } else {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(console.error);
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => location.reload());
+    });
   </script>
-</head>
-
-<body>
-  <header>
-    <div class="logo">Espace Client</div>
-    <div class="profile">
-      <img id="user-photo" src="https://via.placeholder.com/40" alt="Profil" />
-      <div class="dropdown">
-        <a href="#" id="logout">Se déconnecter</a>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <h2>Bonjour <span id="user-name">Invité</span>!</h2>
-    <button id="loginBtn">Connexion avec Google</button>
-
-    <div id="avis-zone" style="display:none; margin-top:20px;">
-      <h3>Laisser un avis</h3>
-      <div id="stars">
-        <span class="star" data-value="1">⭐</span>
-        <span class="star" data-value="2">⭐</span>
-        <span class="star" data-value="3">⭐</span>
-        <span class="star" data-value="4">⭐</span>
-        <span class="star" data-value="5">⭐</span>
-        <span id="blue-star">🔵</span>
-      </div>
-      <textarea id="textAvis" placeholder="Votre avis..."></textarea>
-      <button id="submitAvis">Envoyer l’avis</button>
-    </div>
-
-    <section style="margin-top:30px;">
-      <h2>Avis des clients</h2>
-      <div id="liste-avis"></div>
-    </section>
-  </main>
 </body>
-  </html>
+        </html>
