@@ -1,90 +1,123 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace Client</title>
+  <meta charset="UTF-8" />
+  <title>Publications</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      margin: 0;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
       text-align: center;
-      padding: 40px;
+      color: #333;
     }
-    .btn-google {
-      background-color: #4285F4;
-      color: white;
-      border: none;
-      padding: 10px 20px;
+
+    .publications-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .publication {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .publication p {
       font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
+      color: #444;
+      margin-bottom: 10px;
     }
-    .btn-google:hover {
-      background-color: #357AE8;
-    }.retour-accueil {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  text-decoration: none;
-  background-color: #ddd;
-  color: #000;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-weight: bold;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-.retour-accueil:hover {
-  background-color: #bbb;
-} 
 
+    .publication img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
 
+    .loader {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+    }
   </style>
 </head>
 <body>
-    <header >
-        <a href="index.html" class="retour-accueil">🔙 Accueil</a> 
-    </header>
-  <h1>Espace Client</h1>
-  <p>Connectez-vous avec votre compte Google</p>
-  <button id="googleLogin" class="btn-google">Se connecter avec Google</button>
+  <h1>Publications récentes</h1>
+  <div class="loader" id="loader">Chargement des publications...</div>
+  <div class="publications-container" id="publicationsContainer"></div>
 
-  <!-- Firebase App compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <!-- Firebase Auth compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-  <script>
-    // Configuration Firebase
+    // 🔐 Configuration Firebase à personnaliser
     const firebaseConfig = {
-      apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
-      authDomain: "serit-societe.firebaseapp.com",
-      projectId: "serit-societe",
-      storageBucket: "serit-societe.appspot.com",
-      messagingSenderId: "25581120285",
-      appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
-    };
+ apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+  authDomain: "serit-societe.firebaseapp.com",
+  projectId: "serit-societe",
+  storageBucket: "serit-societe.firebasestorage.app",
+  messagingSenderId: "25581120285",
+  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
+};
 
-    // Initialiser Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // 🔧 Initialisation Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // Connexion avec Google
-    document.getElementById("googleLogin").addEventListener("click", function () {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          const user = result.user;
-          alert("Bienvenue " + user.displayName + " !");
-          // ✅ Redirection vers la page de publication
-          window.location.href = "publication.html";
-        })
-        .catch((error) => {
-          console.error(error);
-          alert("Erreur de connexion : " + error.message);
+    const publicationsContainer = document.getElementById('publicationsContainer');
+    const loader = document.getElementById('loader');
+
+    async function chargerPublications() {
+      try {
+        const q = query(collection(db, "publications"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          loader.textContent = "Aucune publication pour le moment.";
+          return;
+        }
+
+        loader.style.display = "none";
+
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          const publication = document.createElement('div');
+          publication.classList.add('publication');
+
+          if (data.texte) {
+            const texte = document.createElement('p');
+            texte.textContent = data.texte;
+            publication.appendChild(texte);
+          }
+
+          if (data.imageUrl) {
+            const image = document.createElement('img');
+            image.src = data.imageUrl;
+            publication.appendChild(image);
+          }
+
+          publicationsContainer.appendChild(publication);
         });
-    });
+      } catch (error) {
+        loader.textContent = "Erreur lors du chargement des publications.";
+        console.error("Erreur :", error);
+      }
+    }
+
+    chargerPublications();
   </script>
 </body>
-</html>
+  </html>
