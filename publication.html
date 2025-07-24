@@ -32,6 +32,12 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
+    .publication h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #0066cc;
+    }
+
     .publication p {
       font-size: 16px;
       color: #444;
@@ -52,72 +58,11 @@
   </style>
 </head>
 <body>
-  <h1>Publications récentes</h1>
+  <h1>📢 Publications récentes</h1>
   <div class="loader" id="loader">Chargement des publications...</div>
   <div class="publications-container" id="publicationsContainer"></div>
 
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-    // 🔐 Configuration Firebase à personnaliser
-    const firebaseConfig = {
-  apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
-  authDomain: "serit-societe.firebaseapp.com",
-  projectId: "serit-societe",
-  storageBucket: "serit-societe.appspot.com",
-  messagingSenderId: "25581120285",
-  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
-};
-
-    // 🔧 Initialisation Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    const publicationsContainer = document.getElementById('publicationsContainer');
-    const loader = document.getElementById('loader');
-
-    async function chargerPublications() {
-      try {
-        const q = query(collection(db, "publications"), orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          loader.textContent = "Aucune publication pour le moment.";
-          return;
-        }
-
-        loader.style.display = "none";
-
-        querySnapshot.forEach(doc => {
-          const data = doc.data();
-          const publication = document.createElement('div');
-          publication.classList.add('publication');
-
-          if (data.texte) {
-            const texte = document.createElement('p');
-            texte.textContent = data.texte;
-            publication.appendChild(texte);
-          }
-
-          if (data.imageUrl) {
-            const image = document.createElement('img');
-            image.src = data.imageUrl;
-            publication.appendChild(image);
-          }
-
-          publicationsContainer.appendChild(publication);
-        });
-      } catch (error) {
-        loader.textContent = "Erreur lors du chargement des publications.";
-        console.error("Erreur :", error);
-      }
-    }
-
-    chargerPublications();
-  </script>
+  <!-- 🔗 Lien vers le JS externe -->
+  <script type="module" src="publication.js"></script>
 </body>
-  </html>
+</html>
