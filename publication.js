@@ -1,9 +1,6 @@
 import { db } from "./firebase-config.js";
 import {
-  collection,
-  getDocs,
-  query,
-  orderBy
+  collection, getDocs, query, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const publicationsContainer = document.getElementById("publicationsContainer");
@@ -42,6 +39,8 @@ async function chargerPublications() {
       if (data.imageUrl) {
         const image = document.createElement("img");
         image.src = data.imageUrl;
+        image.alt = "Image de la publication";
+        image.style.maxWidth = "100%";
         publication.appendChild(image);
       }
 
