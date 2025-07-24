@@ -1,4 +1,3 @@
-// publication.js
 import { db } from "./firebase-config.js";
 import {
   collection,
@@ -7,41 +6,51 @@ import {
   orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Sélectionne la div où afficher les publications
-const publicationsContainer = document.getElementById("publications-container");
+const publicationsContainer = document.getElementById("publicationsContainer");
+const loader = document.getElementById("loader");
 
-// Fonction pour afficher toutes les publications
-async function afficherPublications() {
-  const publicationsRef = collection(db, "publications");
-  const q = query(publicationsRef, orderBy("date", "desc")); // trie par date
-
+async function chargerPublications() {
   try {
+    const q = query(collection(db, "publications"), orderBy("timestamp", "desc"));
     const querySnapshot = await getDocs(q);
+
     if (querySnapshot.empty) {
-      publicationsContainer.innerHTML = "<p>Aucune publication pour le moment.</p>";
+      loader.textContent = "Aucune publication trouvée.";
       return;
     }
 
-    querySnapshot.forEach((doc) => {
+    loader.style.display = "none";
+
+    querySnapshot.forEach(doc => {
       const data = doc.data();
 
-      // Création du bloc HTML de chaque publication
-      const publicationHTML = `
-        <div class="carte-publication">
-          <h2>${data.titre || "Sans titre"}</h2>
-          <p>${data.texte || "Pas de texte."}</p>
-          ${data.imageURL ? `<img src="${data.imageURL}" alt="Image de la publication">` : ""}
-          <p class="date-publication">Publié le : ${data.date?.toDate().toLocaleString() || "Date inconnue"}</p>
-        </div>
-      `;
+      const publication = document.createElement("div");
+      publication.classList.add("publication");
 
-      publicationsContainer.innerHTML += publicationHTML;
+      if (data.titre) {
+        const titre = document.createElement("h3");
+        titre.textContent = data.titre;
+        publication.appendChild(titre);
+      }
+
+      if (data.description) {
+        const texte = document.createElement("p");
+        texte.textContent = data.description;
+        publication.appendChild(texte);
+      }
+
+      if (data.imageUrl) {
+        const image = document.createElement("img");
+        image.src = data.imageUrl;
+        publication.appendChild(image);
+      }
+
+      publicationsContainer.appendChild(publication);
     });
-  } catch (error) {
-    console.error("Erreur lors de l'affichage des publications :", error);
-    publicationsContainer.innerHTML = "<p>Une erreur est survenue lors du chargement.</p>";
+  } catch (err) {
+    loader.textContent = "Erreur lors du chargement des publications.";
+    console.error("Erreur de chargement :", err);
   }
 }
 
-// Lancer l’affichage au chargement
-window.addEventListener("DOMContentLoaded", afficherPublications);
+chargerPublications();
