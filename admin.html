@@ -3,76 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <title>Admin - Ajouter une publication</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f4f4f4;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    form {
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    input[type="file"],
-    textarea {
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .logout {
-      margin-top: 20px;
-      background-color: #dc3545;
-    }
-
-    .logout:hover {
-      background-color: #a71d2a;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="./admin.js" defer></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Ajouter une Publication</h1>
+  <h1>Ajouter une publication</h1>
 
-  <form id="publicationForm">
-    <input type="file" id="image" accept="image/*" required />
-    <textarea id="description" placeholder="Écrivez ici..." rows="6" required></textarea>
+  <form id="publication-form">
+    <!-- Champ titre ajouté -->
+    <input type="text" id="titre" placeholder="Titre de la publication" required /><br><br>
+
+    <input type="file" id="image" accept="image/*" required /><br><br>
+
+    <textarea id="description" placeholder="Description de la publication" required></textarea><br><br>
+
     <button type="submit">Publier</button>
   </form>
-
-  <button id="logoutBtn" class="logout">🚪 Déconnexion</button>
-
-  <!-- Ton script Firebase + admin.js (déjà configuré) -->
-  <script type="module" src="./admin.js"></script>
 </body>
-  </html>
+</html>
