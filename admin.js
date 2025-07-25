@@ -1,72 +1,70 @@
-// ✅ admin.js sécurisé
+// admin.js
 import { auth, db, storage } from "./firebase-config.js";
 import {
-  doc, setDoc, serverTimestamp, collection
+  doc,
+  setDoc,
+  serverTimestamp,
+  collection
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  ref, uploadBytes, getDownloadURL
+  ref,
+  uploadBytes,
+  getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import {
-  onAuthStateChanged, signOut
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// ✅ UID unique de l’administrateur autorisé
-const adminUID = "39yahW5x6UeOLSpLzghM5CNu3k73";
+// Liste des UID autorisés
+const adminUIDs = [
+  "2SiHTzC7CMLz21x42XeI",        // ✅ Premier administrateur
+  "wOY1JtBng7WYAaQzkC4fm1nLmwe2" // ✅ Deuxième administrateur
+];
 
-// ✅ PROTECTION d'accès à admin.html
-onAuthStateChanged(auth, (user) => {
-  if (!user || user.uid !== adminUID) {
-    alert("Accès refusé. Vous allez être redirigé.");
-    signOut(auth).then(() => {
-      window.location.href = "connexion-admin.html";
-    });
+// Authentification de l’administrateur
+onAuthStateChanged(auth, user => {
+  if (user && adminUIDs.includes(user.uid)) {
+    console.log("Admin connecté :", user.email);
+  } else {
+    window.location.href = "connexion-admin.html"; // Redirection si non admin
   }
 });
 
-// ✅ Déconnexion
+// Gestion du formulaire
+const publicationForm = document.getElementById("publicationForm");
+const descriptionInput = document.getElementById("description");
+const imageInput = document.getElementById("image");
+
+publicationForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const file = imageInput.files[0];
+  const description = descriptionInput.value.trim();
+
+  if (!file || !description) {
+    alert("Veuillez ajouter une image et une description.");
+    return;
+  }
+
+  const storageRef = ref(storage, `images/${Date.now()}-${file.name}`);
+  await uploadBytes(storageRef, file);
+  const imageUrl = await getDownloadURL(storageRef);
+
+  const publicationRef = doc(collection(db, "publications"));
+  await setDoc(publicationRef, {
+    imageUrl,
+    description,
+    timestamp: serverTimestamp()
+  });
+
+  alert("✅ Publication ajoutée !");
+  publicationForm.reset();
+});
+
+// Bouton de déconnexion
 const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "connexion-admin.html";
-  });
-}
-
-// ✅ Soumission du formulaire de publication
-const form = document.getElementById("publicationForm");
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const titre = document.getElementById("titre").value.trim();
-    const description = document.getElementById("description").value.trim();
-    const image = document.getElementById("image").files[0];
-
-    if (!titre || !description || !image) {
-      alert("Tous les champs sont obligatoires.");
-      return;
-    }
-
-    try {
-      // ✅ Envoie de l’image dans Firebase Storage
-      const imageRef = ref(storage, `publications/${Date.now()}-${image.name}`);
-      const snapshot = await uploadBytes(imageRef, image);
-      const imageUrl = await getDownloadURL(snapshot.ref);
-
-      // ✅ Ajout dans Firestore
-      await setDoc(doc(collection(db, "publications")), {
-        titre,
-        description,
-        imageUrl,
-        timestamp: serverTimestamp()
-      });
-
-      alert("✅ Publication enregistrée !");
-      form.reset();
-
-    } catch (error) {
-      console.error("❌ Erreur de publication :", error);
-      alert("Erreur pendant l'envoi. Vérifie ta connexion.");
-    }
-  });
-        }
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "connexion-admin.html";
+});
