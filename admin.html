@@ -1,114 +1,78 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace Admin</title>
+  <meta charset="UTF-8" />
+  <title>Admin - Ajouter une publication</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
+      font-family: Arial, sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
       color: #333;
     }
 
-    header {
-      background: #0066cc;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    main {
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
+    form {
+      max-width: 500px;
+      margin: 0 auto;
       background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
       border-radius: 10px;
-      margin-top: 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    input[type="text"],
-    textarea,
-    input[type="file"] {
+    input[type="file"],
+    textarea {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
+      margin-bottom: 15px;
+      padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
 
     button {
       width: 100%;
-      background: #0066cc;
+      padding: 10px;
+      background-color: #007bff;
       color: white;
-      padding: 14px;
-      font-size: 18px;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 10px;
     }
 
     button:hover {
-      background: #004c99;
+      background-color: #0056b3;
     }
 
     .logout {
       margin-top: 20px;
-      background: #ff4444;
+      background-color: #dc3545;
     }
 
-    footer {
-      text-align: center;
-      margin-top: 50px;
-      font-size: 14px;
-      color: #888;
+    .logout:hover {
+      background-color: #a71d2a;
     }
   </style>
 </head>
 <body>
-    <a href="index.html" class="retour-accueil">← Retour à l’accueil</a>
+  <h1>Ajouter une Publication</h1>
 
-  <header>
-    🛠️ Espace Administrateur
-  </header>
+  <form id="publicationForm">
+    <input type="file" id="image" accept="image/*" required />
+    <textarea id="description" placeholder="Écrivez ici..." rows="6" required></textarea>
+    <button type="submit">Publier</button>
+  </form>
 
-  <main>
-    <form id="form-pub">
-      <label for="titre">Titre :</label>
-      <input type="text" id="titre" placeholder="Titre de la publication" required>
+  <button id="logoutBtn" class="logout">🚪 Déconnexion</button>
 
-      <label for="contenu">Contenu :</label>
-      <textarea id="contenu" placeholder="Écrivez ici..." rows="6" required></textarea>
-
-      <label for="image">Image (optionnelle) :</label>
-      <input type="file" id="image" accept="image/*">
-
-      <button type="submit">📢 Publier</button>
-    </form>
-
-    <button id="logout" class="logout">🚪 Déconnexion</button>
-  </main>
-
-  <footer>
-    &copy; 2025 | Espace Admin sécurisé
-  </footer>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-
-  <!-- Script principal -->
-  <script src="admin.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+  <!-- Ton script Firebase + admin.js (déjà configuré) -->
+  <script type="module" src="./admin.js"></script>
 </body>
-    </html>
+  </html>
