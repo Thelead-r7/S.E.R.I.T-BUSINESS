@@ -2,140 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Espace Admin</title>
+  <title>Connexion Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
-      color: #333;
-    }
-
-    header {
-      background: #0066cc;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    main {
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
-      margin-top: 30px;
-    }
-
-    input[type="text"],
-    textarea,
-    input[type="file"],
-    input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      background: #0066cc;
-      color: white;
-      padding: 14px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background: #004c99;
-    }
-
-    .logout {
-      margin-top: 20px;
-      background: #ff4444;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .error {
-      text-align: center;
-      color: red;
-      margin-top: 10px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 50px;
-      font-size: 14px;
-      color: #888;
-    }
-  </style>
 </head>
 <body>
+  <h1>Connexion Admin</h1>
+  <button id="btn-google">Se connecter avec Google</button>
 
-  <header>🛡️ Espace Administrateur</header>
-
-  <!-- ✅ Bloc de vérification (mot de passe ou UID) -->
-  <main id="verif-section">
-    <h3>Vérification d'accès</h3>
-    <input type="password" id="codeAdmin" placeholder="Entrez le code ou UID">
-    <button onclick="verifierAcces()">Valider</button>
-    <div class="error" id="erreurAcces"></div>
-  </main>
-
-  <!-- ✅ Section réelle du panneau admin (cachée au début) -->
-  <main id="admin-section" class="hidden">
-    <form id="form-pub">
-      <label for="titre">Titre :</label>
-      <input type="text" id="titre" placeholder="Titre de la publication" required>
-
-      <label for="contenu">Contenu :</label>
-      <textarea id="contenu" placeholder="Écrivez ici..." rows="6" required></textarea>
-
-      <label for="image">Image (optionnelle) :</label>
-      <input type="file" id="image" accept="image/*">
-
-      <button type="submit">📢 Publier</button>
-    </form>
-
-    <button id="logout" class="logout">🚪 Déconnexion</button>
-  </main>
-
-  <footer>&copy; 2025 | Admin sécurisé</footer>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-
-  <script src="firebase-config.js"></script>
-  <script src="admin.js"></script>
-
-  <script>
-    function verifierAcces() {
-      const code = document.getElementById("codeAdmin").value.trim();
-      const adminCodeAutorise = "39yahW5x6UeOLSpLzghM5CNu3k73"; // ton code secret ou UID
-
-      if (code === adminCodeAutorise) {
-        document.getElementById("verif-section").classList.add("hidden");
-        document.getElementById("admin-section").classList.remove("hidden");
-      } else {
-        document.getElementById("erreurAcces").textContent = "Code incorrect.";
-      }
-    }
-  </script>
+  <button onclick="window.location.href='index.html'">⬅️ Retour à l'accueil</button>
+  <script type="module" src="connexion-admin.js"></script>
 </body>
-    </html>
+</html>
