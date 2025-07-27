@@ -4,13 +4,14 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-aut
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "TA_CLE_API",
-  authDomain: "TON_PROJET.firebaseapp.com",
-  projectId: "TON_PROJET",
-  storageBucket: "TON_PROJET.appspot.com",
-  messagingSenderId: "XXXXXXXXXXX",
-  appId: "1:XXXXXXXXX:web:XXXXXXXXX",
+apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+  authDomain: "serit-societe.firebaseapp.com",
+  projectId: "serit-societe",
+  storageBucket: "serit-societe.firebasestorage.app",
+  messagingSenderId: "25581120285",
+  appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
 };
+
 
 const app = initializeApp(firebaseConfig);
 
