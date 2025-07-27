@@ -1,21 +1,166 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>🛠️ Espace Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Ajouts spécifiques à admin */
+    main {
+      max-width: 700px;
+      margin: 20px auto;
+      background: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      display: block;
+      color: #004466;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      padding: 12px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 5px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 15px;
+      background: #004466;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    button:hover {
+      background: #006699;
+    }
+
+    .logout-btn {
+      background: #bb2f2f;
+      margin-top: 30px;
+    }
+
+    /* Message erreur/succès */
+    #message {
+      margin-top: 15px;
+      font-weight: 600;
+      color: #bb2f2f;
+      text-align: center;
+    }
+
+    /* Bouton supprimer dans liste publications */
+    .btn-delete {
+      background: #bb2f2f;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .btn-delete:hover {
+      background: #e05151;
+    }
+
+    /* Liste des publications */
+    #liste-publications {
+      margin-top: 40px;
+    }
+
+    .publication-item {
+      border-bottom: 1px solid #ccc;
+      padding: 12px 0;
+    }
+
+    .publication-item h4 {
+      margin-bottom: 6px;
+      color: #004466;
+    }
+
+    .publication-item small {
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <h1>Bienvenue Admin</h1>
+  <button class="menu-icon" onclick="ouvrirMenu()">☰</button>
 
-  <form id="form-publication">
-    <input type="text" id="titre" placeholder="Titre" required><br>
-    <textarea id="contenu" placeholder="Contenu" required></textarea><br>
-    <input type="file" id="image"><br>
-    <button type="submit">Publier</button>
-  </form>
+  <nav class="side-menu" id="sideMenu">
+    <button class="close-btn" onclick="fermerMenu()">×</button>
+    <a href="index.html">Accueil</a>
+    <a href="publications.html">Voir Publications</a>
+    <a href="#" id="btn-logout">Déconnexion</a>
+  </nav>
 
-  <button onclick="window.location.href='index.html'">⬅️ Retour à l'accueil</button>
+  <header>
+    <img src="logo.png" alt="Logo" class="logo" />
+    <h1>Espace Administrateur</h1>
+  </header>
+
+  <main>
+    <form id="form-pub">
+      <label for="titre">Titre de la publication</label>
+      <input type="text" id="titre" placeholder="Entrez un titre" required />
+
+      <label for="texte">Contenu</label>
+      <textarea id="texte" placeholder="Écrivez le contenu ici..." required></textarea>
+
+      <label for="image">Image (optionnelle)</label>
+      <input type="file" id="image" accept="image/*" />
+
+      <button type="submit">Publier</button>
+    </form>
+
+    <div id="message"></div>
+
+    <section id="liste-publications">
+      <h3>Publications existantes</h3>
+      <div id="publications-container"></div>
+    </section>
+
+    <button class="logout-btn" id="btn-logout-bottom">Déconnexion</button>
+  </main>
+
+  <footer>
+    &copy; 2025 | Espace Admin sécurisé
+  </footer>
+
+  <script>
+    // Menu latéral simple
+    function ouvrirMenu() {
+      document.getElementById("sideMenu").style.width = "220px";
+    }
+    function fermerMenu() {
+      document.getElementById("sideMenu").style.width = "0";
+    }
+  </script>
+
   <script type="module" src="admin.js"></script>
 </body>
-</html>
+  </html>
