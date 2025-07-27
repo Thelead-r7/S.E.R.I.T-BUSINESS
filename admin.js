@@ -45,7 +45,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // UIDs admin autorisés (remplace par les vrais)
-const adminUIDs = ["UID_ADMIN_1", "UID_ADMIN_2"];
+const adminUIDs = ["39yahW5x6UeOLSpLzghM5CNu3k73", "WqnEiCNVQjeFHOMXDz7drbDcl2m1"];
 
 // Éléments du DOM
 const form = document.getElementById("form-pub");
