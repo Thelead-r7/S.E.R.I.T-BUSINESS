@@ -15,7 +15,7 @@
     <button class="close-btn" onclick="closeMenu()">×</button>
     <a href="index.html">Accueil</a>
     <a href="espace-client.html">Espace Client</a>
-    <a href="connexion-admin.html">Espace Admin</a>
+    <a href="connexion-admin.html" id="connexion-admin" style="display: none;">Espace administrateur </a>
     <a href="publication.html">Publications</a>
     <a href="politique-confidentialités.html">Politique de Confidentialité</a>
   </div>
@@ -65,6 +65,33 @@
     function closeMenu() {
       document.getElementById("sideMenu").style.width = "0";
     }
+  </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPavrp_mfV0POiDF3V4ZOZ0SHZGwgTmGs",
+    authDomain: "serit-societe.firebaseapp.com",
+    projectId: "serit-societe",
+    storageBucket: "serit-societe.firebasestorage.app",
+    messagingSenderId: "25581120285",
+    appId: "1:25581120285:web:b8ee391fabf3d626480ff4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const adminUIDs = ["39yahW5x6UeOLSpLzghM5CNu3k73", "WqnEiCNVQjeFHOMXDz7drbDcl2m1"];
+
+  onAuthStateChanged(auth, (user) => {
+    if (user && adminUIDs.includes(user.uid)) {
+      document.getElementById("connexion-admin").style.display = "block";
+    }
+  });
   </script>
 </body>
     </html>
