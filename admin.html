@@ -109,6 +109,52 @@
   </style>
 </head>
 <body>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "TA_CLE_API",
+    authDomain: "TON_PROJET.firebaseapp.com",
+    projectId: "TON_PROJECT_ID",
+    storageBucket: "TON_BUCKET.appspot.com",
+    messagingSenderId: "TON_SENDER_ID",
+    appId: "TON_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Liste des UID admins autorisés (ou emails)
+  const adminsUIDs = [
+    "39yahW5x6UeOLSpLzghM5CNu3k73",
+    "WqnEiCNVQjeFHOMXDz7drbDcl2m1"
+  ];
+
+  const adminsEmails = [
+    "estudiantinemood@gmail.com",
+    "amedtoure1992@gmail.com"
+  ];
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Vérifier UID ou email
+      if (adminsUIDs.includes(user.uid) || adminsEmails.includes(user.email)) {
+        // OK, accès autorisé
+        console.log("Admin connecté:", user.email);
+      } else {
+        // Pas admin, déconnexion + redirection
+        alert("Accès refusé : vous n'êtes pas administrateur.");
+        signOut(auth).then(() => {
+          window.location.href = "connexion-admin.html";
+        });
+      }
+    } else {
+      // Pas connecté, redirection vers connexion admin
+      window.location.href = "connexion-admin.html";
+    }
+  });
+  </script>
   <button class="menu-icon" onclick="ouvrirMenu()">☰</button>
 
   <nav class="side-menu" id="sideMenu">
