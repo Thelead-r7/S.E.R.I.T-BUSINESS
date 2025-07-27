@@ -1,15 +1,140 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Publications</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Publications - Avis & Likes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      max-width: 720px;
+      margin: 20px auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      padding: 10px;
+    }
+
+    .publication {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .publication h3 {
+      color: #004466;
+      margin-bottom: 10px;
+    }
+
+    .publication img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .publication p {
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .btn-like {
+      background: transparent;
+      border: none;
+      color: #006699;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-like.liked {
+      color: #e0245e;
+    }
+
+    .comments-section {
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+
+    .comment {
+      margin-bottom: 10px;
+      font-size: 0.9em;
+      background: #f0f8ff;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .comment strong {
+      color: #004466;
+    }
+
+    .add-comment {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .add-comment input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9em;
+    }
+
+    .add-comment button {
+      background: #006699;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .add-comment button:hover {
+      background: #004466;
+    }
+
+    #btn-logout {
+      margin-bottom: 20px;
+      background: #bb2f2f;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #user-info {
+      margin-bottom: 15px;
+      font-size: 0.9em;
+      color: #444;
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
-  <h1>Nos Publications</h1>
-  <div id="liste-publications"></div>
+  <button id="btn-logout">Déconnexion</button>
+  <div id="user-info"></div>
 
-  <button onclick="window.location.href='index.html'">⬅️ Retour à l'accueil</button>
+  <h1>Publications récentes</h1>
+  <div id="publications-container"></div>
+
+  <script type="module" src="firebase.js"></script>
   <script type="module" src="publication.js"></script>
 </body>
-</html>
+  </html>
